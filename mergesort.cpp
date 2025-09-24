@@ -4,16 +4,17 @@
 #include <parlay/primitives.h>
 #include <parlay/random.h>
 #include <parlay/sequence.h>
+#include <algorithm>    // std::sort
 
-#include<sequential_mergesort.h>
-
+#include <sequential_mergesort.h> 
+#include <parallel_mergesort.h> 
 
 // **************************************************************
 // Driver
 // **************************************************************
 int main(int argc, char* argv[]) {
-  auto usage = "Usage: mergesort <n>";
-  if (argc != 2) std::cout << usage << std::endl;
+  auto usage = "Usage: mergesort <n> <algname>";
+  if (argc != 3) std::cout << usage << std::endl;
   else {
     long n;
     try { n = std::stol(argv[1]); }
@@ -26,12 +27,24 @@ int main(int argc, char* argv[]) {
       auto r = gen[i];
       return dis(r);});
 
+    std::cout << "first 10 elements: " << parlay::to_chars(data.head(10)) << std::endl;
+
     parlay::internal::timer t("Time");
     parlay::sequence<long> result;
     for (int i=0; i < 5; i++) {
       result = data;
       t.start();
-      merge_sort(result);
+      if(((std::string)argv[2]) == "seq")
+        sequential_mergesort::mergesort(result);
+      else if(((std::string)argv[2]) == "par")
+        parallel_mergesort::mergesort(result);
+      else if(((std::string)argv[2]) == "stdsort") {
+        std::sort(result.begin(), result.end());
+      }
+      else {
+        std::cout << "invalid algname: " << ((std::string)argv[2]) << std::endl;
+        exit(1);
+      }
       t.next("mergesort");
     }
 
