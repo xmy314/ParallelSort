@@ -25,7 +25,19 @@ namespace sequential_mergesort {
     parlay::sequence<long> mergesort_helper(parlay::sequence<long> &array, int start, int end){
         int n = end-start;
         int m = start + n/2;
-        if(n <= 1) return array.subseq(start, end);
+        if(n <= 20)  {
+            long tmp;
+            for (int i=0;i<n;i++){
+                for (int j=i+1;j<n;j++){
+                    if (array[start+j]<array[start+i]){
+                        tmp = array[start+i];
+                        array[start+i] = array[start+j];
+                        array[start+j] = tmp;
+                    }
+                }
+            }
+            return array.subseq(start, end);
+        }
         else {
             return merge(mergesort_helper(array, start, m), mergesort_helper(array, m, end));
         }
