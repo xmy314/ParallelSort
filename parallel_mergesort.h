@@ -8,7 +8,7 @@ namespace parallel_mergesort
     void merge(slice &a, slice &b, slice &c)
     {
         int total = a.size() + b.size();
-        if (total <= 200)
+        if (total <= 500)
         {
             int ai = 0, ci = 0, bi = 0;
             while (ai < a.size() && bi < b.size())
@@ -100,24 +100,26 @@ namespace parallel_mergesort
 
         int n = array.size();
 
-        if (n <= 200)
+        if (n <= 500)
         {
             long tmp;
 
             if (out_to_a)
             {
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = i + 1; j < n; j++)
-                    {
-                        if (array[j] < array[i])
-                        {
-                            tmp = array[i];
-                            array[i] = array[j];
-                            array[j] = tmp;
-                        }
-                    }
-                }
+                // for (int i = 0; i < n; i++)
+                // {
+                //     for (int j = i + 1; j < n; j++)
+                //     {
+                //         if (array[j] < array[i])
+                //         {
+                //             tmp = array[i];
+                //             array[i] = array[j];
+                //             array[j] = tmp;
+                //         }
+                //     }
+                // }
+
+                std::sort(array.begin(), array.end());
             }
             else
             {
@@ -127,18 +129,20 @@ namespace parallel_mergesort
                     buffer[i] = array[i];
                 }
 
-                for (int i = 0; i < n; i++)
-                {
-                    for (int j = i + 1; j < n; j++)
-                    {
-                        if (buffer[j] < buffer[i])
-                        {
-                            tmp = buffer[i];
-                            buffer[i] = buffer[j];
-                            buffer[j] = tmp;
-                        }
-                    }
-                }
+                // for (int i = 0; i < n; i++)
+                // {
+                //     for (int j = i + 1; j < n; j++)
+                //     {
+                //         if (buffer[j] < buffer[i])
+                //         {
+                //             tmp = buffer[i];
+                //             buffer[i] = buffer[j];
+                //             buffer[j] = tmp;
+                //         }
+                //     }
+                // }
+
+                std::sort(buffer.begin(), buffer.end());
             }
         }
         else
