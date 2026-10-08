@@ -1,8 +1,9 @@
 
 #include <parlay/sequence.h>
 
-namespace sequential_mergesort
+namespace parallel_mergesort_seq
 {
+
     inline constexpr int MERGE_SORT_GRANULARITY = 524288;
 
     parlay::sequence<long> merge(parlay::sequence<long> a, parlay::sequence<long> b)
@@ -51,13 +52,21 @@ namespace sequential_mergesort
         }
         else
         {
-            return merge(mergesort_helper(array, start, m), mergesort_helper(array, m, end));
+            parlay::sequence<long> a(m - start);
+            parlay::sequence<long> b(end - m);
+            parlay::par_do(
+                [&]()
+                { a = mergesort_helper(array, start, m); },
+                [&]()
+                { b = mergesort_helper(array, m, end); });
+
+            return merge(a, b);
         }
     }
 
     void mergesort(parlay::sequence<long> &array)
     {
         array = mergesort_helper(array, 0, array.size());
-        // std::cout << "first 50 elements: " << parlay::to_chars(array.head(50)) << std::endl;
+        // std::cout << "first 10 elements: " << parlay::to_chars(array.head(10)) << std::endl;
     }
 }

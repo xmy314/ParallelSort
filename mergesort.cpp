@@ -1,47 +1,67 @@
-#include<iostream>
+#include <iostream>
 
 #include <parlay/io.h>
 #include <parlay/primitives.h>
 #include <parlay/random.h>
 #include <parlay/sequence.h>
-#include <algorithm>    // std::sort
+#include <algorithm> // std::sort
 
-#include <sequential_mergesort.h> 
-#include <parallel_mergesort.h> 
+#include <sequential_mergesort.h>
+#include <parallel_mergesort_good.h>
+#include <parallel_mergesort_bad.h>
+#include <parallel_mergesort_seq.h>
 
 // **************************************************************
 // Driver
 // **************************************************************
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[])
+{
   auto usage = "Usage: mergesort <n> <algname>";
-  if (argc != 3) std::cout << usage << std::endl;
-  else {
+  if (argc != 3)
+    std::cout << usage << std::endl;
+  else
+  {
     long n;
-    try { n = std::stol(argv[1]); }
-    catch (...) { std::cout << usage << std::endl; return 1; }
+    try
+    {
+      n = std::stol(argv[1]);
+    }
+    catch (...)
+    {
+      std::cout << usage << std::endl;
+      return 1;
+    }
     parlay::random_generator gen;
-    std::uniform_int_distribution<long> dis(0, n-1);
+    std::uniform_int_distribution<long> dis(0, n - 1);
 
     // generate random long values
-    auto data = parlay::tabulate(n, [&] (long i) {
+    auto data = parlay::tabulate(n, [&](long i)
+                                 {
       auto r = gen[i];
-      return dis(r);});
+      return dis(r); });
 
     std::cout << "first 10 elements: " << parlay::to_chars(data.head(10)) << std::endl;
 
     parlay::internal::timer t("Time");
     parlay::sequence<long> result;
-    for (int i=0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
       result = data;
       t.start();
-      if(((std::string)argv[2]) == "seq")
+      if (((std::string)argv[2]) == "seq")
         sequential_mergesort::mergesort(result);
-      else if(((std::string)argv[2]) == "par")
-        parallel_mergesort::mergesort(result);
-      else if(((std::string)argv[2]) == "stdsort") {
+      else if (((std::string)argv[2]) == "parseq")
+        parallel_mergesort_seq::mergesort(result);
+      else if (((std::string)argv[2]) == "parbad")
+        parallel_mergesort_bad::mergesort(result);
+      else if (((std::string)argv[2]) == "pargood")
+        parallel_mergesort_good::mergesort(result);
+      else if (((std::string)argv[2]) == "stdsort")
+      {
         std::sort(result.begin(), result.end());
       }
-      else {
+      else
+      {
         std::cout << "invalid algname: " << ((std::string)argv[2]) << std::endl;
         exit(1);
       }

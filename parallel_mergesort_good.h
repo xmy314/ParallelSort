@@ -1,14 +1,17 @@
 #include <algorithm>
 #include <parlay/sequence.h>
 
-namespace parallel_mergesort
+namespace parallel_mergesort_good
 {
+    inline constexpr int MERGE_GRANULARITY = 4096;
+    inline constexpr int MERGE_SORT_GRANULARITY = 1024;
+
     using iterator_type = parlay::sequence<long>::iterator;
     using slice = parlay::slice<iterator_type, iterator_type>;
     void merge(slice &a, slice &b, slice &c)
     {
         int total = a.size() + b.size();
-        if (total <= 500)
+        if (total <= MERGE_GRANULARITY)
         {
             int ai = 0, ci = 0, bi = 0;
             while (ai < a.size() && bi < b.size())
@@ -55,31 +58,7 @@ namespace parallel_mergesort
             slice right_a = a.cut(a_half, a.size());
             slice left_a = a.cut(0, a_half);
 
-            int b_half;
-
-            if (b[b.size() - 1] < mid_value)
-            {
-                b_half = b.size();
-            }
-            else
-            {
-                int l = 0;
-                int r = b.size() - 1;
-                while (l <= r)
-                {
-                    int b_half_test = (l + r) / 2;
-
-                    if (b[b_half_test] > mid_value)
-                    {
-                        b_half = b_half_test;
-                        r = b_half_test - 1;
-                    }
-                    else
-                    {
-                        l = b_half_test + 1;
-                    }
-                }
-            }
+            int b_half = std::upper_bound(b.begin(), b.end(), mid_value) - b.begin();
 
             slice left_b = b.cut(0, b_half);
             slice right_b = b.cut(b_half, b.size());
@@ -100,24 +79,11 @@ namespace parallel_mergesort
 
         int n = array.size();
 
-        if (n <= 500)
+        if (n <= MERGE_SORT_GRANULARITY)
         {
-            long tmp;
 
             if (out_to_a)
             {
-                // for (int i = 0; i < n; i++)
-                // {
-                //     for (int j = i + 1; j < n; j++)
-                //     {
-                //         if (array[j] < array[i])
-                //         {
-                //             tmp = array[i];
-                //             array[i] = array[j];
-                //             array[j] = tmp;
-                //         }
-                //     }
-                // }
 
                 std::sort(array.begin(), array.end());
             }
@@ -128,19 +94,6 @@ namespace parallel_mergesort
                 {
                     buffer[i] = array[i];
                 }
-
-                // for (int i = 0; i < n; i++)
-                // {
-                //     for (int j = i + 1; j < n; j++)
-                //     {
-                //         if (buffer[j] < buffer[i])
-                //         {
-                //             tmp = buffer[i];
-                //             buffer[i] = buffer[j];
-                //             buffer[j] = tmp;
-                //         }
-                //     }
-                // }
 
                 std::sort(buffer.begin(), buffer.end());
             }
